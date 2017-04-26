@@ -1,5 +1,5 @@
 var ip_util = require('ip');
-//var env = require('./env');
+var env = require('./env');
 const banTokenStore = (process.env.r_remote == 'true') ? require('redis').createClient({ port: process.env.r_port, host: process.env.r_host, auth_pass: process.env.r_pass, tls: { servername: process.env.r_host } }) : require('redis').createClient();
 
 var options = {
@@ -23,7 +23,9 @@ var state = {
 var IPS = {};
 
 function getRemoteIP(req) {
-    return req.headers['x-real-ip'] ? req.headers['x-real-ip'] : req.headers['x-forwarded-for'];
+    var ip = req.headers['x-forwarded-for'];
+    var forwarded = (ip && ip.includes(':')) ? ip.split(':')[0] : ip;
+    return req.headers['x-real-ip'] ? req.headers['x-real-ip'] : forwarded;
 }
 
 function getIP(req) {
@@ -32,6 +34,10 @@ function getIP(req) {
         var nginxHeader = req.headers['x-nginx-proxy'];
         var isNginxForwarded = (nginxHeader == null || nginxHeader == 'false') ? false : true;
         if (isNginxForwarded) {
+            console.log("[+] NGINX REVERSE PROXY DETECTED.");
+            state.reverseproxy = true;
+        }
+        else if (req.headers['x-forwarded-for']) {
             console.log("[+] REVERSE PROXY DETECTED.");
             state.reverseproxy = true;
         }
