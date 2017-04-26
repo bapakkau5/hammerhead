@@ -1,8 +1,9 @@
 var ip_util = require('ip');
-const banTokenStore = require('redis').createClient();
+var env = require('./env');
+const banTokenStore = (process.env.r_remote == 'true') ? require('redis').createClient({ port: process.env.r_port, host: process.env.r_host, auth_pass: process.env.r_pass, tls: { servername: process.env.r_host } }) : require('redis').createClient();
 
 var options = {
-    limit: 1000,
+    request_limit: 1000,
     ban_threshold: 3,
     epoch_limit: 10,
     block_undetected: true,
@@ -80,7 +81,7 @@ module.exports = {
         let isBlackListedIP = (ip) => { return options.blacklist.length > 0 && options.blacklist.indexOf(ip) >= 0 }
         let isWhiteListedIP = (ip) => { return options.whitelist.length > 0 && options.whitelist.indexOf(ip) >= 0 }
 
-        if (ipUndetected(ip) || isBlackListedIP(ip)){
+        if (ipUndetected(ip) || isBlackListedIP(ip)) {
             res.status(429)
             req.connection.end()
         }
@@ -96,8 +97,8 @@ module.exports = {
 
                         IPS[ip].requests++;
 
-                        if (IPS[ip].requests % options.limit == 0) {
-                            var ban_duration = exists.epochs < options.ban_threshold ? (options.duration * exists.epochs) : options.ban_threshold * options.duration * Math.pow(2, (exists.epochs - options.ban_threshold))
+                        if (IPS[ip].requests % options.request_limit == 0) {
+                            var ban_duration = exists.epochs < options.ban_threshold ? (options.duration * (exists.epochs + 1)) : options.ban_threshold * options.duration * Math.pow(2, (exists.epochs - options.ban_threshold))
                             banTokenStore.set(ip, "BANNED: " + new Date())
                             banTokenStore.expire(ip, ban_duration);
                             console.log('[HH] IP BANNED : ', ip);
