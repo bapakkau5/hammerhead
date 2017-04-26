@@ -77,7 +77,7 @@ module.exports = {
     protect: function (req, res, next) {
         var ip = getIP(req);
 
-        let ipUndetected = (ip) => { return !ip && ip in options.block_undetected }
+        let ipUndetected = (ip) => { return !ip && options.block_undetected }
         let isBlackListedIP = (ip) => { return options.blacklist.length > 0 && options.blacklist.indexOf(ip) >= 0 }
         let isWhiteListedIP = (ip) => { return options.whitelist.length > 0 && options.whitelist.indexOf(ip) >= 0 }
 
