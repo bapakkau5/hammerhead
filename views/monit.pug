@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  h1 HammerHead monitor
+  p Bot IPs   : #{ips}
+  p Blacklist : #{blacklist}
+
+  script.
+    setTimeout( () => { location.reload() }, 1000)

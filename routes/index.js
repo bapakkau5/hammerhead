@@ -8,16 +8,12 @@ router.get('/', function (req, res, next) {
   })
 });
 
-router.get('/config', function (req, res, next) {
-  res.send(hammerhead.viewconfig());
+router.get('/monitor', function (req, res, next) {
+  res.render('monit', { ips: JSON.stringify(hammerhead.getips()), blacklist: JSON.stringify(hammerhead.getblacklist()) });
 })
 
-router.get('/bans', function (req, res, next) {
-  res.send(hammerhead.getbans());
+router.get('/bl', function (req, res, next) {
+  res.send(hammerhead.getblacklist());
 })
-
-router.get('/vuln/:exp', function (req, res) {
-  res.send("The answer is :" + eval(req.params.exp));
-});
 
 module.exports = router;
