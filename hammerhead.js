@@ -1,5 +1,4 @@
 var ip_util = require('ip');
-var env = require('./env');
 const banTokenStore = (process.env.r_remote == 'true') ? require('redis').createClient({ port: process.env.r_port, host: process.env.r_host, auth_pass: process.env.r_pass, tls: { servername: process.env.r_host } }) : require('redis').createClient();
 
 var options = {
