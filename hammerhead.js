@@ -2,7 +2,7 @@ var ip_util = require('ip');
 const banTokenStore = require('redis').createClient();
 
 var options = {
-    limit: 100,
+    limit: 1000,
     ban_threshold: 3,
     epoch_limit: 10,
     block_undetected: true,
@@ -10,7 +10,7 @@ var options = {
     message: 'Blocked by HammerHead',
     duration: 60,
     blacklist: [],
-    whitelist: ["192.168.0.104"],
+    whitelist: [],
     log: true
 };
 
@@ -77,8 +77,8 @@ module.exports = {
         var ip = getIP(req);
 
         let ipUndetected = (ip) => { return !ip && ip in options.block_undetected }
-        let isBlackListedIP = (ip) => { return options.blacklist.length > 0 && ip in options.blacklist }
-        let isWhiteListedIP = (ip) => { return options.whitelist.length > 0 && ip in options.whitelist }
+        let isBlackListedIP = (ip) => { return options.blacklist.length > 0 && options.blacklist.indexOf(ip) >= 0 }
+        let isWhiteListedIP = (ip) => { return options.whitelist.length > 0 && options.whitelist.indexOf(ip) >= 0 }
 
         if (ipUndetected(ip) || isBlackListedIP(ip)){
             res.status(429)
@@ -97,7 +97,7 @@ module.exports = {
                         IPS[ip].requests++;
 
                         if (IPS[ip].requests % options.limit == 0) {
-                            var ban_duration = exists.epochs < options.ban_threshold ? (options.duration * exists.epochs) : Math.pow(options.duration, (options.epoch_limit - exists.epochs))
+                            var ban_duration = exists.epochs < options.ban_threshold ? (options.duration * exists.epochs) : options.ban_threshold * options.duration * Math.pow(2, (exists.epochs - options.ban_threshold))
                             banTokenStore.set(ip, "BANNED: " + new Date())
                             banTokenStore.expire(ip, ban_duration);
                             console.log('[HH] IP BANNED : ', ip);
