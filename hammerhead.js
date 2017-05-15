@@ -21,27 +21,27 @@ var state = {
 
 var IPS = {};
 
-function getRemoteIP(req) {
+getRemoteIP = (req) =>  {
     var ip = req.headers['x-forwarded-for'];
     var forwarded = (ip && ip.includes(':')) ? ip.split(':')[0] : ip;
     return req.headers['x-real-ip'] ? req.headers['x-real-ip'] : forwarded;
 }
 
-function getIP(req) {
+getIP = (req) => {
     if (!state.reverseproxychecked) {
-        console.log("[+] CHECKING FOR A REVERSE PROXY.")
+        console.log("[+HH+] CHECKING FOR A REVERSE PROXY.")
         var nginxHeader = req.headers['x-nginx-proxy'];
         var isNginxForwarded = (nginxHeader == null || nginxHeader == 'false') ? false : true;
         if (isNginxForwarded) {
-            console.log("[+] NGINX REVERSE PROXY DETECTED.");
+            console.log("[+HH+] NGINX REVERSE PROXY DETECTED.");
             state.reverseproxy = true;
         }
         else if (req.headers['x-forwarded-for']) {
-            console.log("[+] REVERSE PROXY DETECTED.");
+            console.log("[+HH+] REVERSE PROXY DETECTED.");
             state.reverseproxy = true;
         }
         else
-            console.log("[+] NO REVERSE PROXY. EXPRESS HANDLES CLIENT CONNECTIONS.")
+            console.log("[+HH+] NO REVERSE PROXY. EXPRESS HANDLES CLIENT CONNECTIONS.")
         state.reverseproxychecked = true;
     }
     var ip_address = null;
@@ -61,25 +61,32 @@ function getIP(req) {
 
 }
 
-function kick(req, res, ip) {
+kick = (req, res, ip) => {
     if (options.log) console.log('[HH] REQUEST FROM ' + ip + ' REJECTED AT ' + (new Date()));
-    else if (typeof options.action === 'number') {
+    if (typeof options.action === 'number') {
         res.status(options.action);
         res.send(options.message);
     }
 }
 
 module.exports = {
+    getConfig: () => {
+        return options;
+    },
 
-    getips: function () {
+    setConfig: (config) => {
+        Object.assign(options, config);
+    },
+
+    getIPs: () => {
         return IPS;
     },
 
-    getblacklist: function () {
-        return options.blacklist;
+    getLists: () => {
+        return { blacklist: (options.blacklist), whitelist: (options.whitelist) };
     },
 
-    protect: function (req, res, next) {
+    protect: (req, res, next) => {
         var ip = getIP(req);
 
         let ipUndetected = (ip) => { return !ip && options.block_undetected }
@@ -103,7 +110,7 @@ module.exports = {
                         IPS[ip].requests++;
 
                         if (IPS[ip].requests % options.request_limit == 0) {
-                            var ban_duration = exists.epochs < options.ban_threshold ? (options.duration * (exists.epochs + 1)) : options.ban_threshold * options.duration * Math.pow(2, (exists.epochs - options.ban_threshold))
+                            var ban_duration = exists.epochs < options.ban_threshold ? (options.duration * (exists.epochs + 1)) : options.ban_threshold * options.duration * Math.pow(2, (exists.epochs - options.ban_threshold + 1))
                             banTokenStore.set(ip, "BANNED: " + new Date())
                             banTokenStore.expire(ip, ban_duration);
                             console.log('[HH] IP BANNED : ', ip);
