@@ -6,7 +6,13 @@ hammerhead.setConfig({ whitelist: ['127.0.0.1'] });
 
 router.get('/', function (req, res, next) {
   hammerhead.protect(req, res, function () {
-    res.render('index', { title: 'Express' });
+    res.render('index', { title: 'Express-HH-Get' });
+  })
+});
+
+router.post('/', function (req, res, next) {
+  hammerhead.protect(req, res, function () {
+    res.render('index', { title: 'Express-HH-Post' });
   })
 });
 
