@@ -2,7 +2,17 @@ extends layout
 
 block content
   h1 HammerHead monitor
-  p Suspected Bot IPs   : #{ips}
+  p Suspected Bot IPs   : 
+  ul
+    each val, ip in ips
+      li
+        h3 #{ip}
+        div REQUESTS: #{val.requests}
+        div EPOCHS (NUM OF BANS): #{val.epochs}
+        div BAN DURATION: #{val.ban_duration} seconds
+        div LAST BAN TIME: #{val.ban_time == null ? 'No ban yet.' : val.ban_time.toLocaleString()}
+
+  br
   p Lists : #{lists}
 
   script.

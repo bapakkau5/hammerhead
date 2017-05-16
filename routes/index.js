@@ -17,7 +17,7 @@ router.post('/', function (req, res, next) {
 });
 
 router.get('/monitor', function (req, res, next) {
-  res.render('monit', { ips: JSON.stringify(hammerhead.getIPs()), lists: JSON.stringify(hammerhead.getLists()) });
+  res.render('monit', { ips: hammerhead.getIPs(), lists: JSON.stringify(hammerhead.getLists()) });
 })
 
 module.exports = router;

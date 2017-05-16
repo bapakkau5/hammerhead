@@ -62,7 +62,7 @@ getIP = (req) => {
 }
 
 kick = (req, res, ip) => {
-    if (options.log) console.log('[HH] REQUEST FROM ' + ip + ' REJECTED AT ' + (new Date()));
+    if (options.log) console.log('[+HH+] REQUEST FROM ' + ip + ' REJECTED AT ' + (new Date()));
     if (typeof options.action === 'number') {
         res.status(options.action);
         res.send(options.message);
@@ -113,12 +113,14 @@ module.exports = {
                             var ban_duration = exists.epochs < options.ban_threshold ? (options.duration * (exists.epochs + 1)) : options.ban_threshold * options.duration * Math.pow(2, (exists.epochs - options.ban_threshold + 1))
                             banTokenStore.set(ip, "BANNED: " + new Date())
                             banTokenStore.expire(ip, ban_duration);
-                            console.log('[HH] IP BANNED : ', ip);
+                            console.log('[+HH+] IP BANNED : ', ip);
                             IPS[ip].epochs++;
                             IPS[ip].ban_duration = ban_duration;
                             IPS[ip].ban_time = new Date();
+
                             if (IPS[ip].epochs == options.epoch_limit)
                                 options.blacklist.push(ip);
+
                             kick(req, res, ip)
                         }
                         else
